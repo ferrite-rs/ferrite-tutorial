@@ -1,0 +1,13 @@
+[package]
+name = "ferrite-tutorial"
+version = "0.1.0"
+authors = ["Soares Chen <soares.chen@maybevoid.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = "1.7.0"
+rand = "0.8.4"
+env_logger = "0.8.4"
+ferrite-session = "0.1.4"
