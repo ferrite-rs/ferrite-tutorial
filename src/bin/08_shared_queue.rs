@@ -3,8 +3,8 @@ use ferrite_session::prelude::*;
 /*
   # Excercise 8: Shared Queue
 
-  - Implement a shared queue provider with a `Vec<String>` internal state
-    and provides the following operations:
+  - Implement a shared queue provider consist of chains of shared processes,
+    providing the shared session type Queue with following operations:
 
     - Enqueue: Receive a string value, enqueue it to the back of of the queue
       and then release.
@@ -14,29 +14,33 @@ use ferrite_session::prelude::*;
         as `Some(res)`.
       - If the queue is empty, sends `None`.
 
-  - Implement an `enqueue` function, which takes a `SharedChannel<Queue>`
-    and a string value. The function would run a Ferrite session that
-    acquires the shared proess, choose Enqueue, and sends the value to
-    the shared queue process.
+  - Implement an empty queue shared provider.
 
-  - Implement a `dequeue` function, which takes a `SharedChannel<Queue>`
-    and does the following:
+  - Implement a head queue shared provider, which takes a string value and a
+    tail shared channel `SharedChannel<Queue>`, and offers a new shared channel
+    with the head being the given string value, and tail operations delegated to
+    the other shared process.
 
-    - Run a Ferrite session that acquires the shared proess
-    - Choose Dequeue and receives the value.
-    - If the result is `Some(val)`, print "Gotten dequeue value: {val}"
-    - If the result is `None`, print "Dequeue returns None".
+  - Implement an enqueue client which is given a string value and a shared
+    channel, and runs a linear session that enqueue the given value to the
+    shared queue.
 
-  The provided main function will spawn a shared queue, and call
-  the `enqueue` and `dequeue` functions with different parameters.
+  - Implement a dequeue client which is given a shared channel, and
+    runs a linear session that tries to dequeue from the shared queue
+    and sends back an `Option<String>` value.
+
+  The provided main function spawns the shared providers and clients,
+  and attempt to enqueue and dequeue from the shared queue.
 
   After completing your solution, you should get the following result
   running the program:
 
   ```
   $ cargo run --bin 08_shared_queue
-  Gotten dequeue value: World
-  Gotten dequeue value: Hello
+  Gotten dequeue value: Foo
+  Gotten dequeue value: Bar
+  Dequeue returns None
+  Gotten dequeue value: Baz
   Dequeue returns None
   ```
 */
@@ -45,35 +49,78 @@ type Queue = LinearToShared<ExternalChoice<QueueOps>>;
 
 define_choice! { QueueOps;
   Enqueue: ReceiveValue<String, Release>,
-  Dequeue: SendValue<Option<String>, Release>
+  Dequeue: InternalChoice<DequeueOps>
 }
 
-fn shared_queue(mut queue: Vec<String>) -> SharedSession<Queue> {
-  todo!("Implement shared queue here");
+define_choice! { DequeueOps;
+  HeadVal: SendValue<String, Release>,
+  QueueEmpty: Release,
 }
 
-fn create_shared_queue() -> SharedChannel<Queue> {
-  run_shared_session(shared_queue(vec![]))
+fn empty_queue() -> SharedSession<Queue>
+{
+  todo!("Implement empty queue here");
 }
 
-async fn enqueue(queue: SharedChannel<Queue>, val: String) {
+fn head_queue(
+  val1: String,
+  tail: SharedChannel<Queue>,
+) -> SharedSession<Queue>
+{
+  todo!("Implement head queue here");
+}
+
+fn enqueue_client(
+  queue: SharedChannel<Queue>,
+  val: String
+) -> Session<End>
+{
   todo!("Implement enqueue client here");
 }
 
-async fn dequeue_and_print(queue: SharedChannel<Queue>) {
+fn dequeue_client(
+  queue: SharedChannel<Queue>,
+) -> Session<SendValue<Option<String>, End>>
+{
   todo!("Implement dequeue client here");
 }
 
+async fn enqueue(
+  queue: SharedChannel<Queue>,
+  val: String,
+)
+{
+  run_session(enqueue_client(queue, val)).await;
+}
+
+async fn dequeue_and_print(queue: SharedChannel<Queue>)
+{
+  let res = run_session_with_result(dequeue_client(queue)).await;
+  match res {
+    Some(val) => {
+      println!("Gotten dequeue value: {}", val);
+    }
+    None => {
+      println!("Dequeue returns None");
+    }
+  }
+}
+
 #[tokio::main]
-pub async fn main() {
+pub async fn main()
+{
   env_logger::init();
 
-  let queue = create_shared_queue();
+  let queue = run_shared_session(empty_queue());
 
-  enqueue(queue.clone(), "Hello".to_string()).await;
-  enqueue(queue.clone(), "World".to_string()).await;
+  enqueue(queue.clone(), "Foo".to_string()).await;
+  enqueue(queue.clone(), "Bar".to_string()).await;
 
   dequeue_and_print(queue.clone()).await;
+  dequeue_and_print(queue.clone()).await;
+  dequeue_and_print(queue.clone()).await;
+
+  enqueue(queue.clone(), "Baz".to_string()).await;
   dequeue_and_print(queue.clone()).await;
   dequeue_and_print(queue.clone()).await;
 }
