@@ -6,13 +6,20 @@ use ferrite_session::prelude::*;
   - Implement a shared queue provider consist of chains of shared processes,
     providing the shared session type Queue with following operations:
 
-    - Enqueue: Receive a string value, enqueue it to the back of of the queue
-      and then release.
+    - Enqueue:
+      - Receive a string value,
+
+      - Enqueue it to the back of of the queue and then release.
 
     - Dequeue:
-      - If the queue is not empty, pop the front of the queue and send the value
-        as `Some(res)`.
-      - If the queue is empty, sends `None`.
+
+      - If the queue is not empty:
+
+        - Pop the front of the queue
+        - Offer the branch `Elem`
+        - Send the string value
+
+      - If the queue is empty, sends `Empty`.
 
   - Implement an empty queue shared provider.
 
@@ -36,7 +43,7 @@ use ferrite_session::prelude::*;
   running the program:
 
   ```
-  $ cargo run --bin 08_shared_queue
+  $ cargo run --bin 09_shared_queue
   Gotten dequeue value: Foo
   Gotten dequeue value: Bar
   Dequeue returns None
@@ -53,8 +60,8 @@ define_choice! { QueueOps;
 }
 
 define_choice! { DequeueOps;
-  HeadVal: SendValue<String, Release>,
-  QueueEmpty: Release,
+  Elem: SendValue<String, Release>,
+  Empty: Release,
 }
 
 fn empty_queue() -> SharedSession<Queue>

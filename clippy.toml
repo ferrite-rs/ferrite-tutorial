@@ -1,4 +1,5 @@
 blacklisted-names = []
-unused-import = false
+unused-imports = false
 redundant-clone = false
+unreacheable-code = false
 type-complexity-threshold = 4096
