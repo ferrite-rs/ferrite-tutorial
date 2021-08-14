@@ -1,7 +1,7 @@
 use ferrite_session::prelude::*;
 
 /*
-  # Excercise 8: Shared Queue
+  # Excercise 9: Shared Queue
 
   - Implement a shared queue provider consist of chains of shared processes,
     providing the shared session type Queue with following operations:

@@ -1,5 +1,5 @@
 /*
- Exercise 9: Dining Philosophers
+ Exercise 10: Dining Philosophers
 
  In this exercise you will implement the dining philosophers
  problem using session type.
@@ -91,7 +91,7 @@ fn main_session() -> Session<End> {
   let p0 = philosopher(0, f0.clone(), f1.clone());
   let p1 = philosopher(1, f1.clone(), f2.clone());
   let p2 = philosopher(2, f2.clone(), f3.clone());
-  let p3 = philosopher(3, f3.clone(), f1.clone());
+  let p3 = philosopher(3, f3.clone(), f0.clone());
 
   include_session(p0, move |c0| {
     include_session(p1, move |c1| {
